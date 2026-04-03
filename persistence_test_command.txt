@@ -1,0 +1,2 @@
+terraform destroy -target=module.the-web-comp.aws_instance.ec2-1 -target=module.the-web-comp.aws_instance.ec2-2
+terraform apply
