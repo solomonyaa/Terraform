@@ -22,6 +22,7 @@ resource "aws_s3_object" "my-image" {
 }
 
 resource "aws_efs_file_system" "my-efs" {
+  # This prevents duplicate EFS creation
   creation_token = "my-efs"
 
   tags = {
@@ -93,8 +94,11 @@ resource "aws_instance" "ec2-1" {
 #!/bin/bash
 yum install -y amazon-efs-utils
 mkdir /mnt/efs
-sleep 30
-mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs
+pip3 install botocore
+for i in 1 2 3 4 5; do
+  mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
+  sleep 30
+done
 if [ ! -f /mnt/efs/index.html ]; then
   aws s3 cp s3://${aws_s3_bucket.s3-test-bucket.bucket}/index.html /mnt/efs/index.html
 fi
@@ -121,8 +125,11 @@ resource "aws_instance" "ec2-2" {
 #!/bin/bash
 yum install -y amazon-efs-utils
 mkdir /mnt/efs
-sleep 30
-mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs
+pip3 install botocore
+for i in 1 2 3 4 5; do
+  mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
+  sleep 30
+done
 amazon-linux-extras install -y nginx1
 systemctl start nginx
 systemctl enable nginx
