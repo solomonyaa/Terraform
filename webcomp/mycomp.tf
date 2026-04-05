@@ -90,28 +90,28 @@ resource "aws_instance" "ec2-1" {
   key_name               = "solomon's-key-pair"
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
-  user_data = <<EOF
-#!/bin/bash
-yum install -y amazon-efs-utils
-mkdir /mnt/efs
-pip3 install botocore
-for i in 1 2 3 4 5; do
-  mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
-  sleep 30
-done
-if [ ! -f /mnt/efs/index.html ]; then
-  aws s3 cp s3://${aws_s3_bucket.s3-test-bucket.bucket}/index.html /mnt/efs/index.html
-fi
-yum install -y docker
-systemctl start docker
-systemctl enable docker
-docker run -d -p 80:80 -v /mnt/efs:/usr/share/nginx/html:ro nginx
-EOF
+  depends_on = [aws_efs_mount_target.mount_target_subnet-1]
 
-  tags = {
-    Name = "Instance A"
-  }
+  user_data = <<-EOF
+    #!/bin/bash
+    yum install -y amazon-efs-utils docker
+    mkdir -p /mnt/efs
+    for i in {1..10}; do
+      mount -t efs -o tls ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
+      sleep 15
+    done
+    if [ ! -f /mnt/efs/index.html ]; then
+      aws s3 cp s3://${aws_s3_bucket.s3-test-bucket.bucket}/index.html /mnt/efs/index.html
+    fi
+    chmod -R 755 /mnt/efs
+    systemctl start docker
+    systemctl enable docker
+    docker run -d -p 80:80 -v /mnt/efs:/usr/share/nginx/html:ro nginx
+  EOF
+
+  tags = { Name = "Instance A" }
 }
+
 
 resource "aws_instance" "ec2-2" {
   ami                    = "ami-0c02fb55956c7d316"
@@ -121,25 +121,25 @@ resource "aws_instance" "ec2-2" {
   key_name               = "solomon's-key-pair"
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
-  user_data = <<EOF
-#!/bin/bash
-yum install -y amazon-efs-utils
-mkdir /mnt/efs
-pip3 install botocore
-for i in 1 2 3 4 5; do
-  mount -t efs ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
-  sleep 30
-done
-amazon-linux-extras install -y nginx1
-systemctl start nginx
-systemctl enable nginx
-rm -rf /usr/share/nginx/html
-ln -s /mnt/efs /usr/share/nginx/html
-EOF
+  depends_on = [aws_efs_mount_target.mount_target_subnet-2]
 
-  tags = {
-    Name = "Instance B"
-  }
+  user_data = <<-EOF
+    #!/bin/bash
+    yum install -y amazon-efs-utils
+    amazon-linux-extras install -y nginx1
+    mkdir -p /mnt/efs
+    for i in {1..10}; do
+      mount -t efs -o tls ${aws_efs_file_system.my-efs.id}:/ /mnt/efs && break
+      sleep 15
+    done
+    rm -rf /usr/share/nginx/html
+    ln -s /mnt/efs /usr/share/nginx/html
+    chmod -R 755 /mnt/efs
+    systemctl start nginx
+    systemctl enable nginx
+  EOF
+
+  tags = { Name = "Instance B" }
 }
 
 
