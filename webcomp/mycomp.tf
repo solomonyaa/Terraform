@@ -15,8 +15,8 @@ resource "aws_s3_object" "my-html" {
 }
 
 resource "aws_s3_object" "my-image" {
-  bucket = aws_s3_bucket.s3-test-bucket.id
-  key = "my-test-image.jpg"
+  bucket       = aws_s3_bucket.s3-test-bucket.id
+  key          = "my-test-image.jpg"
   content_type = "image/jpeg"
   source       = "${path.module}/sample-image.jpg"
 }
@@ -31,14 +31,14 @@ resource "aws_efs_file_system" "my-efs" {
 }
 
 resource "aws_efs_mount_target" "mount_target_subnet-1" {
-  file_system_id = aws_efs_file_system.my-efs.id
-  subnet_id      = var.public_subnet_1_id
+  file_system_id  = aws_efs_file_system.my-efs.id
+  subnet_id       = var.public_subnet_1_id
   security_groups = [aws_security_group.my_security_group.id]
 }
 
 resource "aws_efs_mount_target" "mount_target_subnet-2" {
-  file_system_id = aws_efs_file_system.my-efs.id
-  subnet_id      = var.public_subnet_2_id
+  file_system_id  = aws_efs_file_system.my-efs.id
+  subnet_id       = var.public_subnet_2_id
   security_groups = [aws_security_group.my_security_group.id]
 }
 
@@ -47,8 +47,8 @@ resource "aws_efs_mount_target" "mount_target_subnet-2" {
 
 
 resource "aws_security_group" "my_security_group" {
-  name        = "my_security_group"
-  vpc_id      = var.vpc_id
+  name   = "my_security_group"
+  vpc_id = var.vpc_id
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_http" {
@@ -87,8 +87,8 @@ resource "aws_instance" "ec2-1" {
   instance_type          = "t2.micro"
   subnet_id              = var.public_subnet_1_id
   vpc_security_group_ids = [aws_security_group.my_security_group.id]
-  key_name = "solomon's-key-pair"
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  key_name               = "solomon's-key-pair"
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = <<EOF
 #!/bin/bash
@@ -114,12 +114,12 @@ EOF
 }
 
 resource "aws_instance" "ec2-2" {
-  ami           = "ami-0c02fb55956c7d316"
-  instance_type = "t2.micro"
-  subnet_id = var.public_subnet_2_id
+  ami                    = "ami-0c02fb55956c7d316"
+  instance_type          = "t2.micro"
+  subnet_id              = var.public_subnet_2_id
   vpc_security_group_ids = [aws_security_group.my_security_group.id]
-  key_name = "solomon's-key-pair"
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  key_name               = "solomon's-key-pair"
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = <<EOF
 #!/bin/bash
@@ -144,7 +144,7 @@ EOF
 
 
 resource "aws_s3_bucket_public_access_block" "public_access" {
-  bucket = aws_s3_bucket.s3-test-bucket.id
+  bucket                  = aws_s3_bucket.s3-test-bucket.id
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false

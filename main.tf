@@ -12,11 +12,11 @@ provider "aws" {
 }
 
 module "the-web-net" {
-    source = "./webnet"
+  source = "./webnet"
 }
 
 module "the-web-comp" {
-  source = "./webcomp"
+  source             = "./webcomp"
   vpc_id             = module.the-web-net.vpc_id
   public_subnet_1_id = module.the-web-net.public_subnet_1_id
   public_subnet_2_id = module.the-web-net.public_subnet_2_id
